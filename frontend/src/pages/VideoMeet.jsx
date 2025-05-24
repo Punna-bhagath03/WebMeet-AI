@@ -11,6 +11,8 @@ import MicOffIcon from '@mui/icons-material/MicOff';
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import server from '../environment';
 
 const server_url = 'http://localhost:8000';
@@ -41,6 +43,8 @@ export default function VideoMeetComponent() {
 
   const videoRef = useRef([]);
   let [videos, setVideos] = useState([]);
+  const [maximizedVideo, setMaximizedVideo] = useState(null);
+  const [hoveredVideo, setHoveredVideo] = useState(null);
 
   useEffect(() => {
     console.log('Initializing permissions');
@@ -669,26 +673,22 @@ export default function VideoMeetComponent() {
         </div>
       ) : (
         <div className={styles.meetVideoContainer}>
-          {showModal ? (
+          {showModal && (
             <div className={styles.chatRoom}>
               <div className={styles.chatContainer}>
                 <h1>Chat</h1>
-
                 <div className={styles.chattingDisplay}>
                   {messages.length !== 0 ? (
-                    messages.map((item, index) => {
-                      return (
-                        <div style={{ marginBottom: '20px' }} key={index}>
-                          <p style={{ fontWeight: 'bold' }}>{item.sender}</p>
-                          <p>{item.data}</p>
-                        </div>
-                      );
-                    })
+                    messages.map((item, index) => (
+                      <div style={{ marginBottom: '20px' }} key={index}>
+                        <p style={{ fontWeight: 'bold' }}>{item.sender}</p>
+                        <p>{item.data}</p>
+                      </div>
+                    ))
                   ) : (
                     <p>No Messages Yet</p>
                   )}
                 </div>
-
                 <div className={styles.chattingArea}>
                   <TextField
                     value={message}
@@ -696,6 +696,7 @@ export default function VideoMeetComponent() {
                     id="outlined-basic"
                     label="Enter Your chat"
                     variant="outlined"
+                    required
                   />
                   <Button variant="contained" onClick={sendMessage}>
                     Send
@@ -703,11 +704,135 @@ export default function VideoMeetComponent() {
                 </div>
               </div>
             </div>
-          ) : (
-            <></>
           )}
 
-          <div className={styles.buttonContainers}>
+          {/* Main conference container */}
+          <div className={`${styles.conferenceView} ${maximizedVideo ? styles.maximizedLayout : ''}`}>
+            {!maximizedVideo ? (
+              // Grid layout when no video is maximized
+              <>
+                {/* Local video */}
+                <div className={`${styles.videoWrapper} ${styles.localVideo}`}>
+                  <video
+                    className={styles.peerVideo}
+                    ref={localVideoref}
+                    autoPlay
+                    muted
+                  />
+                  <div className={styles.participantName}>
+                    {username} (You)
+                  </div>
+                </div>
+
+                {/* Remote videos */}
+                {videos.map((video) => (
+                  <div 
+                    key={video.socketId}
+                    className={styles.videoWrapper}
+                    onMouseEnter={() => setHoveredVideo(video.socketId)}
+                    onMouseLeave={() => setHoveredVideo(null)}
+                  >
+                    <video
+                      className={styles.peerVideo}
+                      data-socket={video.socketId}
+                      ref={(ref) => {
+                        if (ref && video.stream) {
+                          ref.srcObject = video.stream;
+                        }
+                      }}
+                      autoPlay
+                    />
+                    <div className={styles.participantName}>
+                      {`Participant ${video.socketId.slice(0, 4)}`}
+                    </div>
+                    {hoveredVideo === video.socketId && (
+                      <IconButton 
+                        className={styles.maximizeButton}
+                        onClick={() => setMaximizedVideo(video.socketId)}
+                      >
+                        <OpenInFullIcon />
+                      </IconButton>
+                    )}
+                  </div>
+                ))}
+              </>
+            ) : (
+              // Maximized layout
+              <>
+                {/* Main maximized video */}
+                <div className={styles.maximizedVideoContainer}>
+                  {videos.map((video) => 
+                    video.socketId === maximizedVideo ? (
+                      <div key={video.socketId} className={styles.videoWrapper}>
+                        <video
+                          className={styles.peerVideo}
+                          data-socket={video.socketId}
+                          ref={(ref) => {
+                            if (ref && video.stream) {
+                              ref.srcObject = video.stream;
+                            }
+                          }}
+                          autoPlay
+                        />
+                        <div className={styles.participantName}>
+                          {`Participant ${video.socketId.slice(0, 4)}`}
+                        </div>
+                        <IconButton 
+                          className={styles.maximizeButton}
+                          onClick={() => setMaximizedVideo(null)}
+                        >
+                          <CloseFullscreenIcon />
+                        </IconButton>
+                      </div>
+                    ) : null
+                  )}
+                </div>
+
+                {/* Sidebar with other videos */}
+                <div className={`${styles.participantsSidebar} ${styles.showSidebar}`}>
+                  {/* Local video in sidebar */}
+                  <div className={`${styles.videoWrapper} ${styles.sidebarVideo}`}>
+                    <video
+                      className={styles.peerVideo}
+                      ref={localVideoref}
+                      autoPlay
+                      muted
+                    />
+                    <div className={styles.participantName}>
+                      {username} (You)
+                    </div>
+                  </div>
+
+                  {/* Other participant videos in sidebar */}
+                  {videos.map((video) => 
+                    video.socketId !== maximizedVideo ? (
+                      <div 
+                        key={video.socketId}
+                        className={`${styles.videoWrapper} ${styles.sidebarVideo}`}
+                      >
+                        <video
+                          className={styles.peerVideo}
+                          data-socket={video.socketId}
+                          ref={(ref) => {
+                            if (ref && video.stream) {
+                              ref.srcObject = video.stream;
+                            }
+                          }}
+                          autoPlay
+                        />
+                        <div className={styles.participantName}>
+                          {`Participant ${video.socketId.slice(0, 4)}`}
+                        </div>
+                      </div>
+                    ) : null
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Control buttons */}
+          <div className={`${styles.buttonContainers} ${maximizedVideo ? styles.minimizedControls : ''}`}>
             <IconButton onClick={handleVideo} style={{ color: 'white' }}>
               {video === true ? <VideocamIcon /> : <VideocamOffIcon />}
             </IconButton>
@@ -720,15 +845,9 @@ export default function VideoMeetComponent() {
 
             {screenAvailable === true ? (
               <IconButton onClick={handleScreen} style={{ color: 'white' }}>
-                {screen === true ? (
-                  <ScreenShareIcon />
-                ) : (
-                  <StopScreenShareIcon />
-                )}
+                {screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
               </IconButton>
-            ) : (
-              <></>
-            )}
+            ) : null}
 
             <Badge badgeContent={newMessages} max={999} color="secondary">
               <IconButton
@@ -738,29 +857,6 @@ export default function VideoMeetComponent() {
                 <ChatIcon />
               </IconButton>
             </Badge>
-          </div>
-
-          <video
-            className={styles.meetUserVideo}
-            ref={localVideoref}
-            autoPlay
-            muted
-          ></video>
-
-          <div className={styles.conferenceView}>
-            {videos.map((video) => (
-              <div key={video.socketId}>
-                <video
-                  data-socket={video.socketId}
-                  ref={(ref) => {
-                    if (ref && video.stream) {
-                      ref.srcObject = video.stream;
-                    }
-                  }}
-                  autoPlay
-                ></video>
-              </div>
-            ))}
           </div>
         </div>
       )}
