@@ -1,6 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import io from 'socket.io-client';
-import { Badge, IconButton, TextField } from '@mui/material';
+import { 
+  Badge, 
+  IconButton, 
+  TextField, 
+  Typography, 
+  Paper, 
+  Box,
+  Drawer,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  Divider
+} from '@mui/material';
 import { Button } from '@mui/material';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
@@ -13,7 +26,12 @@ import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
+import PersonIcon from '@mui/icons-material/Person';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import CloseIcon from '@mui/icons-material/Close';
+import GroupIcon from '@mui/icons-material/Group';
 import server from '../environment';
+import { AuthContext } from '../contexts/AuthContext';
 
 const server_url = 'http://localhost:8000';
 
@@ -27,6 +45,7 @@ export default function VideoMeetComponent() {
   var socketRef = useRef();
   let socketIdRef = useRef();
   let localVideoref = useRef();
+  const { addToUserHistory } = useContext(AuthContext);
 
   let [videoAvailable, setVideoAvailable] = useState(true);
   let [audioAvailable, setAudioAvailable] = useState(true);
@@ -45,6 +64,11 @@ export default function VideoMeetComponent() {
   let [videos, setVideos] = useState([]);
   const [maximizedVideo, setMaximizedVideo] = useState(null);
   const [hoveredVideo, setHoveredVideo] = useState(null);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [aiMessage, setAIMessage] = useState('');
+  const [aiChatHistory, setAIChatHistory] = useState([]);
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     console.log('Initializing permissions');
@@ -619,12 +643,18 @@ export default function VideoMeetComponent() {
   };
 
   let openChat = () => {
-    setModal(true);
+    setShowChat(!showChat);
+    setShowAIChat(false);
     setNewMessages(0);
   };
 
   let closeChat = () => {
-    setModal(false);
+    setShowChat(false);
+  };
+
+  const toggleAIChat = () => {
+    setShowAIChat(!showAIChat);
+    setShowChat(false);
   };
 
   let handleMessage = (e) => {
@@ -646,217 +676,391 @@ export default function VideoMeetComponent() {
     setMessage('');
   };
 
-  let connect = () => {
-    setAskForUsername(false);
-    getMedia();
+  let connect = async () => {
+    try {
+      setAskForUsername(false);
+      // Get the meeting code from the URL
+      const meetingCode = window.location.pathname.substring(1);
+      // Add to history when connecting
+      if (meetingCode) {
+        await addToUserHistory(meetingCode);
+      }
+      getMedia();
+    } catch (error) {
+      console.error('Error connecting to meeting:', error);
+    }
+  };
+
+  const handleAIChat = async () => {
+    if (!aiMessage.trim()) return;
+
+    try {
+      setIsAILoading(true);
+      setAIChatHistory(prev => [...prev, { type: 'user', message: aiMessage }]);
+
+      const response = await fetch('http://localhost:8000/api/v1/ai/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ message: aiMessage })
+      });
+
+      const data = await response.json();
+      setAIChatHistory(prev => [...prev, { type: 'ai', message: data.response }]);
+      setAIMessage('');
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setAIChatHistory(prev => [...prev, { 
+        type: 'error', 
+        message: 'Failed to get AI response. Please try again.' 
+      }]);
+    } finally {
+      setIsAILoading(false);
+    }
+  };
+
+  // Function to get conference view classes
+  const getConferenceViewClasses = () => {
+    const classes = [styles.conferenceView];
+    if (maximizedVideo) classes.push(styles.maximizedLayout);
+    if (showChat) classes.push(styles.chatOpen);
+    if (showAIChat) classes.push(styles.aiOpen);
+    return classes.join(' ');
+  };
+
+  // Function to render participants list
+  const renderParticipantsList = () => {
+    if (!maximizedVideo) return null;
+    
+    return (
+      <div className={styles.participantsList}>
+        <Typography variant="h6">
+          <GroupIcon sx={{ fontSize: 20 }} />
+          Participants ({videos.length + 1})
+        </Typography>
+        <div className={styles.participantItem}>
+          <PersonIcon />
+          <Typography variant="body2">
+            {username} (You)
+          </Typography>
+        </div>
+        {videos.map((video) => (
+          <div key={video.socketId} className={styles.participantItem}>
+            <PersonIcon />
+            <Typography variant="body2">
+              {`Participant ${video.socketId.slice(0, 4)}`}
+            </Typography>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
     <div>
       {askForUsername === true ? (
-        <div>
-          <h2>Enter into Lobby </h2>
-          <TextField
-            id="outlined-basic"
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            variant="outlined"
-          />
-          <Button variant="contained" onClick={connect}>
-            Connect
-          </Button>
+        <div className={styles.lobbyContainer}>
+          <Paper elevation={3} className={styles.lobbyCard}>
+            <Box className={styles.lobbyVideoPreview}>
+              <video ref={localVideoref} autoPlay muted></video>
+              <div className={styles.lobbyControls}>
+                <IconButton 
+                  onClick={handleVideo} 
+                  className={styles.lobbyButton}
+                >
+                  {video ? <VideocamIcon /> : <VideocamOffIcon />}
+                </IconButton>
+                <IconButton 
+                  onClick={handleAudio} 
+                  className={styles.lobbyButton}
+                >
+                  {audio ? <MicIcon /> : <MicOffIcon />}
+                </IconButton>
+              </div>
+            </Box>
 
-          <div>
-            <video ref={localVideoref} autoPlay muted></video>
-          </div>
+            <Box className={styles.lobbyForm}>
+              <Typography variant="h5" gutterBottom>
+                Join Meeting
+              </Typography>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                Preview your camera and microphone before joining
+              </Typography>
+              
+              <Box className={styles.usernameInput}>
+                <PersonIcon className={styles.userIcon} />
+                <TextField
+                  fullWidth
+                  id="outlined-basic"
+                  label="Enter your name"
+                  variant="outlined"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="John Doe"
+                />
+              </Box>
+
+              <Button 
+                variant="contained" 
+                onClick={connect}
+                fullWidth
+                size="large"
+                disabled={!username.trim()}
+                className={styles.joinButton}
+              >
+                Join Now
+              </Button>
+            </Box>
+          </Paper>
         </div>
       ) : (
         <div className={styles.meetVideoContainer}>
-          {showModal && (
-            <div className={styles.chatRoom}>
-              <div className={styles.chatContainer}>
-                <h1>Chat</h1>
-                <div className={styles.chattingDisplay}>
-                  {messages.length !== 0 ? (
-                    messages.map((item, index) => (
-                      <div style={{ marginBottom: '20px' }} key={index}>
-                        <p style={{ fontWeight: 'bold' }}>{item.sender}</p>
-                        <p>{item.data}</p>
-                      </div>
-                    ))
-                  ) : (
-                    <p>No Messages Yet</p>
-                  )}
-                </div>
-                <div className={styles.chattingArea}>
-                  <TextField
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    id="outlined-basic"
-                    label="Enter Your chat"
-                    variant="outlined"
-                    required
-                  />
-                  <Button variant="contained" onClick={sendMessage}>
-                    Send
-                  </Button>
-                </div>
+          {/* Main conference container */}
+          <div className={getConferenceViewClasses()}>
+            {/* Local video - always visible */}
+            <div className={`${styles.videoWrapper} ${styles.localVideo}`}>
+              <video
+                className={styles.peerVideo}
+                ref={localVideoref}
+                autoPlay
+                muted
+              />
+              <div className={styles.participantName}>
+                {username} (You)
               </div>
             </div>
-          )}
 
-          {/* Main conference container */}
-          <div className={`${styles.conferenceView} ${maximizedVideo ? styles.maximizedLayout : ''}`}>
-            {!maximizedVideo ? (
-              // Grid layout when no video is maximized
+            {maximizedVideo ? (
               <>
-                {/* Local video */}
-                <div className={`${styles.videoWrapper} ${styles.localVideo}`}>
-                  <video
-                    className={styles.peerVideo}
-                    ref={localVideoref}
-                    autoPlay
-                    muted
-                  />
-                  <div className={styles.participantName}>
-                    {username} (You)
-                  </div>
-                </div>
-
-                {/* Remote videos */}
-                {videos.map((video) => (
-                  <div 
-                    key={video.socketId}
-                    className={styles.videoWrapper}
-                    onMouseEnter={() => setHoveredVideo(video.socketId)}
-                    onMouseLeave={() => setHoveredVideo(null)}
-                  >
-                    <video
-                      className={styles.peerVideo}
-                      data-socket={video.socketId}
-                      ref={(ref) => {
-                        if (ref && video.stream) {
-                          ref.srcObject = video.stream;
-                        }
-                      }}
-                      autoPlay
-                    />
-                    <div className={styles.participantName}>
-                      {`Participant ${video.socketId.slice(0, 4)}`}
-                    </div>
-                    {hoveredVideo === video.socketId && (
+                {/* Maximized remote video */}
+                {videos.map((video) => 
+                  video.socketId === maximizedVideo ? (
+                    <div key={video.socketId} className={`${styles.videoWrapper} ${styles.maximizedVideo}`}>
+                      <video
+                        className={styles.peerVideo}
+                        data-socket={video.socketId}
+                        ref={(ref) => {
+                          if (ref && video.stream) {
+                            ref.srcObject = video.stream;
+                          }
+                        }}
+                        autoPlay
+                      />
+                      <div className={styles.participantName}>
+                        {`Participant ${video.socketId.slice(0, 4)}`}
+                      </div>
                       <IconButton 
                         className={styles.maximizeButton}
-                        onClick={() => setMaximizedVideo(video.socketId)}
+                        onClick={() => setMaximizedVideo(null)}
                       >
-                        <OpenInFullIcon />
+                        <CloseFullscreenIcon />
                       </IconButton>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ) : null
+                )}
               </>
             ) : (
-              // Maximized layout
-              <>
-                {/* Main maximized video */}
-                <div className={styles.maximizedVideoContainer}>
-                  {videos.map((video) => 
-                    video.socketId === maximizedVideo ? (
-                      <div key={video.socketId} className={styles.videoWrapper}>
-                        <video
-                          className={styles.peerVideo}
-                          data-socket={video.socketId}
-                          ref={(ref) => {
-                            if (ref && video.stream) {
-                              ref.srcObject = video.stream;
-                            }
-                          }}
-                          autoPlay
-                        />
-                        <div className={styles.participantName}>
-                          {`Participant ${video.socketId.slice(0, 4)}`}
-                        </div>
-                        <IconButton 
-                          className={styles.maximizeButton}
-                          onClick={() => setMaximizedVideo(null)}
-                        >
-                          <CloseFullscreenIcon />
-                        </IconButton>
-                      </div>
-                    ) : null
-                  )}
-                </div>
-
-                {/* Sidebar with other videos */}
-                <div className={`${styles.participantsSidebar} ${styles.showSidebar}`}>
-                  {/* Local video in sidebar */}
-                  <div className={`${styles.videoWrapper} ${styles.sidebarVideo}`}>
-                    <video
-                      className={styles.peerVideo}
-                      ref={localVideoref}
-                      autoPlay
-                      muted
-                    />
-                    <div className={styles.participantName}>
-                      {username} (You)
-                    </div>
+              // Grid layout for other participants
+              videos.map((video) => (
+                <div 
+                  key={video.socketId}
+                  className={styles.videoWrapper}
+                  onMouseEnter={() => setHoveredVideo(video.socketId)}
+                  onMouseLeave={() => setHoveredVideo(null)}
+                >
+                  <video
+                    className={styles.peerVideo}
+                    data-socket={video.socketId}
+                    ref={(ref) => {
+                      if (ref && video.stream) {
+                        ref.srcObject = video.stream;
+                      }
+                    }}
+                    autoPlay
+                  />
+                  <div className={styles.participantName}>
+                    {`Participant ${video.socketId.slice(0, 4)}`}
                   </div>
-
-                  {/* Other participant videos in sidebar */}
-                  {videos.map((video) => 
-                    video.socketId !== maximizedVideo ? (
-                      <div 
-                        key={video.socketId}
-                        className={`${styles.videoWrapper} ${styles.sidebarVideo}`}
-                      >
-                        <video
-                          className={styles.peerVideo}
-                          data-socket={video.socketId}
-                          ref={(ref) => {
-                            if (ref && video.stream) {
-                              ref.srcObject = video.stream;
-                            }
-                          }}
-                          autoPlay
-                        />
-                        <div className={styles.participantName}>
-                          {`Participant ${video.socketId.slice(0, 4)}`}
-                        </div>
-                      </div>
-                    ) : null
+                  {hoveredVideo === video.socketId && (
+                    <IconButton 
+                      className={styles.maximizeButton}
+                      onClick={() => setMaximizedVideo(video.socketId)}
+                    >
+                      <OpenInFullIcon />
+                    </IconButton>
                   )}
                 </div>
-              </>
+              ))
             )}
           </div>
 
+          {/* Participants list */}
+          {renderParticipantsList()}
+
+          {/* Chat Room */}
+          <div className={`${styles.chatRoom} ${showChat ? styles.visible : ''}`}>
+            <div className={styles.chatContainer}>
+              <Box sx={{ 
+                p: 2, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                borderBottom: 1, 
+                borderColor: 'divider',
+                bgcolor: 'white'
+              }}>
+                <Typography variant="h6">Chat</Typography>
+                <IconButton onClick={closeChat}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+              <div className={styles.chattingDisplay}>
+                {messages.length !== 0 ? (
+                  messages.map((item, index) => (
+                    <div style={{ marginBottom: '20px' }} key={index}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{item.sender}</Typography>
+                      <Typography variant="body2">{item.data}</Typography>
+                    </div>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', mt: 2 }}>
+                    No Messages Yet
+                  </Typography>
+                )}
+              </div>
+              <div className={styles.chattingArea}>
+                <TextField
+                  fullWidth
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  variant="outlined"
+                  size="small"
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                />
+                <Button variant="contained" onClick={sendMessage}>
+                  Send
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Chat Drawer */}
+          <Box className={`${styles.aiChatDrawer} ${showAIChat ? styles.visible : ''}`}>
+            <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ 
+                p: 2, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between', 
+                borderBottom: 1, 
+                borderColor: 'divider',
+                bgcolor: 'white'
+              }}>
+                <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <SmartToyIcon /> AI Assistant
+                </Typography>
+                <IconButton onClick={() => setShowAIChat(false)}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+
+              <Box sx={{ 
+                flexGrow: 1, 
+                overflow: 'auto', 
+                p: 2,
+                bgcolor: '#f8f9fa'
+              }}>
+                <List>
+                  {aiChatHistory.map((chat, index) => (
+                    <ListItem key={index} sx={{ 
+                      flexDirection: 'column', 
+                      alignItems: chat.type === 'user' ? 'flex-end' : 'flex-start',
+                      px: 0
+                    }}>
+                      <Paper elevation={1} sx={{ 
+                        p: 2, 
+                        bgcolor: chat.type === 'user' ? 'primary.light' : 'white',
+                        color: chat.type === 'user' ? 'white' : 'text.primary',
+                        maxWidth: '80%',
+                        borderRadius: 2
+                      }}>
+                        <Typography variant="body2">{chat.message}</Typography>
+                      </Paper>
+                    </ListItem>
+                  ))}
+                  {isAILoading && (
+                    <ListItem sx={{ justifyContent: 'center' }}>
+                      <CircularProgress size={24} />
+                    </ListItem>
+                  )}
+                </List>
+              </Box>
+
+              <Box sx={{ 
+                p: 2, 
+                borderTop: 1, 
+                borderColor: 'divider',
+                bgcolor: 'white'
+              }}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Ask AI anything..."
+                  value={aiMessage}
+                  onChange={(e) => setAIMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAIChat()}
+                  disabled={isAILoading}
+                  size="small"
+                  sx={{ mb: 1 }}
+                />
+                <Button 
+                  fullWidth 
+                  variant="contained" 
+                  onClick={handleAIChat}
+                  disabled={isAILoading || !aiMessage.trim()}
+                >
+                  {isAILoading ? 'Processing...' : 'Ask AI'}
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+
           {/* Control buttons */}
-          <div className={`${styles.buttonContainers} ${maximizedVideo ? styles.minimizedControls : ''}`}>
+          <div className={styles.buttonContainers}>
             <IconButton onClick={handleVideo} style={{ color: 'white' }}>
-              {video === true ? <VideocamIcon /> : <VideocamOffIcon />}
+              {video ? <VideocamIcon /> : <VideocamOffIcon />}
             </IconButton>
             <IconButton onClick={handleEndCall} style={{ color: 'red' }}>
               <CallEndIcon />
             </IconButton>
             <IconButton onClick={handleAudio} style={{ color: 'white' }}>
-              {audio === true ? <MicIcon /> : <MicOffIcon />}
+              {audio ? <MicIcon /> : <MicOffIcon />}
             </IconButton>
 
-            {screenAvailable === true ? (
+            {screenAvailable && (
               <IconButton onClick={handleScreen} style={{ color: 'white' }}>
-                {screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+                {screen ? <ScreenShareIcon /> : <StopScreenShareIcon />}
               </IconButton>
-            ) : null}
+            )}
 
             <Badge badgeContent={newMessages} max={999} color="secondary">
               <IconButton
-                onClick={() => setModal(!showModal)}
-                style={{ color: 'white' }}
+                onClick={openChat}
+                style={{ color: showChat ? '#4caf50' : 'white' }}
               >
                 <ChatIcon />
               </IconButton>
             </Badge>
+
+            <IconButton
+              onClick={toggleAIChat}
+              style={{ color: showAIChat ? '#4caf50' : 'white' }}
+            >
+              <SmartToyIcon />
+            </IconButton>
           </div>
         </div>
       )}

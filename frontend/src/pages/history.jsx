@@ -1,78 +1,216 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import Card from '@mui/material/Card';
-import Box from '@mui/material/Box';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import HomeIcon from '@mui/icons-material/Home';
+import withAuth from '../utils/withAuth';
+import { AuthContext } from '../contexts/AuthContext';
+import {
+  Container,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  IconButton,
+  AppBar,
+  Toolbar,
+  Box,
+  Tooltip,
+  Divider,
+  Button,
+  Snackbar,
+  ListItemSecondary,
+  Grid
+} from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import VideocamIcon from '@mui/icons-material/Videocam';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { format } from 'date-fns';
 
-import { IconButton } from '@mui/material';
-export default function History() {
-  const { getHistoryOfUser } = useContext(AuthContext);
-
-  const [meetings, setMeetings] = useState([]);
-
-  const routeTo = useNavigate();
+function History() {
+  const navigate = useNavigate();
+  const { getHistoryOfUser, addToUserHistory } = useContext(AuthContext);
+  const [showCopiedAlert, setShowCopiedAlert] = useState(false);
+  const [meetings, setMeetings] = useState({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const history = await getHistoryOfUser();
-        setMeetings(history);
-      } catch {
-        // IMPLEMENT SNACKBAR
+        setLoading(true);
+        const historyData = await getHistoryOfUser();
+        if (Array.isArray(historyData)) {
+          // Format meetings with dates and sort by most recent
+          const formattedMeetings = historyData.map(meeting => ({
+            ...meeting,
+            date: new Date(meeting.timestamp || Date.now())
+          })).sort((a, b) => b.date - a.date);
+
+          // Group meetings by date
+          const groupedMeetings = formattedMeetings.reduce((groups, meeting) => {
+            const date = meeting.date.toLocaleDateString('en-US', {
+              month: 'long',
+              day: 'numeric',
+              year: 'numeric'
+            });
+            if (!groups[date]) {
+              groups[date] = [];
+            }
+            groups[date].push(meeting);
+            return groups;
+          }, {});
+
+          setMeetings(groupedMeetings);
+        }
+      } catch (error) {
+        console.error('Error fetching history:', error);
+        setMeetings({});
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchHistory();
-  }, []);
+  }, [getHistoryOfUser]);
 
-  let formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
+  const handleCopyCode = (code) => {
+    navigator.clipboard.writeText(code);
+    setShowCopiedAlert(true);
   };
 
-  return (
-    <div>
-      <IconButton
-        onClick={() => {
-          routeTo('/home');
-        }}
-      >
-        <HomeIcon />
-      </IconButton>
-      {meetings.length !== 0 ? (
-        meetings.map((e, i) => {
-          return (
-            <>
-              <Card key={i} variant="outlined">
-                <CardContent>
-                  <Typography
-                    sx={{ fontSize: 14 }}
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    Code: {e.meetingCode}
-                  </Typography>
+  const handleJoinMeeting = (code) => {
+    navigate(`/${code}`);
+  };
 
-                  <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                    Date: {formatDate(e.date)}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </>
-          );
-        })
-      ) : (
-        <></>
-      )}
+  const handleDelete = async (code) => {
+    try {
+      // Implement delete functionality if available in the backend
+      // For now, just refresh the history
+      const historyData = await getHistoryOfUser();
+      if (Array.isArray(historyData)) {
+        const formattedMeetings = historyData
+          .filter(meeting => meeting.code !== code)
+          .map(meeting => ({
+            ...meeting,
+            date: new Date(meeting.timestamp || Date.now())
+          }))
+          .sort((a, b) => b.date - a.date);
+
+        const groupedMeetings = formattedMeetings.reduce((groups, meeting) => {
+          const date = meeting.date.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+          });
+          if (!groups[date]) {
+            groups[date] = [];
+          }
+          groups[date].push(meeting);
+          return groups;
+        }, {});
+
+        setMeetings(groupedMeetings);
+      }
+    } catch (error) {
+      console.error('Error deleting meeting:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, textAlign: 'center' }}>
+        <Typography>Loading history...</Typography>
+      </Container>
+    );
+  }
+
+  return (
+    <div className="historyContainer">
+      <AppBar position="static" color="transparent" elevation={0}>
+        <Toolbar>
+          <IconButton edge="start" onClick={() => navigate('/home')} sx={{ mr: 2 }}>
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
+            Meeting History
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        {Object.keys(meetings).length > 0 ? (
+          Object.entries(meetings).map(([date, dayMeetings]) => (
+            <Paper key={date} elevation={3} sx={{ mb: 3, overflow: 'hidden' }}>
+              <Box sx={{ bgcolor: 'primary.light', color: 'white', p: 2 }}>
+                <Typography variant="h6">
+                  {date}
+                </Typography>
+              </Box>
+              <List>
+                {dayMeetings.map((meeting, index) => (
+                  <React.Fragment key={meeting.code || index}>
+                    <ListItem
+                      secondaryAction={
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Tooltip title="Copy Meeting Code">
+                            <IconButton edge="end" onClick={() => handleCopyCode(meeting.code)}>
+                              <ContentCopyIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Join Meeting">
+                            <IconButton edge="end" onClick={() => handleJoinMeeting(meeting.code)}>
+                              <VideocamIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton edge="end" onClick={() => handleDelete(meeting.code)}>
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      }
+                    >
+                      <ListItemText
+                        primary={`Meeting Code: ${meeting.code || 'N/A'}`}
+                        secondary={meeting.date.toLocaleTimeString('en-US', {
+                          hour: 'numeric',
+                          minute: 'numeric',
+                          hour12: true
+                        })}
+                      />
+                    </ListItem>
+                    {index < dayMeetings.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            </Paper>
+          ))
+        ) : (
+          <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" color="textSecondary" gutterBottom>
+              No Meeting History
+            </Typography>
+            <Typography variant="body2" color="textSecondary" paragraph>
+              Your recent meetings will appear here
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/home')}
+              startIcon={<VideocamIcon />}
+            >
+              Start a Meeting
+            </Button>
+          </Paper>
+        )}
+      </Container>
+
+      <Snackbar
+        open={showCopiedAlert}
+        autoHideDuration={3000}
+        onClose={() => setShowCopiedAlert(false)}
+        message="Meeting code copied to clipboard"
+      />
     </div>
   );
 }
+
+export default withAuth(History);

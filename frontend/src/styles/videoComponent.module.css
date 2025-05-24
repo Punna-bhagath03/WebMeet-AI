@@ -5,54 +5,30 @@
   overflow: hidden;
 }
 
-.meetUserVideo {
-  position: absolute;
-  bottom: 10vh;
-  height: 20vh;
-  width: auto;
-  left: 0;
-  border-radius: 20px;
-  z-index: 1;
-}
-
-.buttonContainers {
-  position: absolute;
-  width: 100vw;
-  bottom: 0;
-  text-align: center;
-  z-index: 10;
-  transition: all 0.3s ease;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.5);
-}
-
-.minimizedControls {
-  width: auto;
-  right: 20px;
-  border-radius: 10px;
-  padding: 10px;
-}
-
-.buttonContainers svg {
-  font-size: 2.5rem;
-}
-
+/* Conference view adjustments */
 .conferenceView {
   display: flex;
+  flex-wrap: wrap;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
+  padding: 20px;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Adjust container width when chat/AI is open */
+.conferenceView.chatOpen,
+.conferenceView.aiOpen {
+  width: calc(100% - 370px);
 }
 
 /* Grid layout for non-maximized view */
 .conferenceView:not(.maximizedLayout) {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  align-content: flex-start;
 }
 
 /* Regular view - remote videos */
@@ -61,61 +37,60 @@
   min-width: 300px;
   max-width: 500px;
   aspect-ratio: 16/9;
+  flex-grow: 1;
 }
 
-/* Regular view - local video */
-.conferenceView:not(.maximizedLayout) .localVideo {
-  position: fixed;
-  bottom: 100px;
-  left: 20px;
-  width: 240px !important;
-  aspect-ratio: 16/9;
-  z-index: 9;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+/* Adjust video width when chat/AI is open */
+.conferenceView.chatOpen:not(.maximizedLayout) .videoWrapper:not(.localVideo),
+.conferenceView.aiOpen:not(.maximizedLayout) .videoWrapper:not(.localVideo) {
+  width: calc(50% - 20px);
 }
 
 /* Maximized layout */
 .maximizedLayout {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-}
-
-.maximizedVideoContainer {
-  flex: 1;
-  height: 100vh;
-  position: relative;
-  background: black;
-}
-
-.maximizedVideoContainer .videoWrapper {
-  width: 100%;
-  height: 100%;
-}
-
-.participantsSidebar {
-  width: 300px;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  transition: all 0.3s ease;
-  overflow-y: auto;
+  padding-right: 270px; /* Space for participants list */
+  gap: 0;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
+  justify-content: flex-start;
 }
 
-.sidebarVideo {
-  width: 100%;
-  aspect-ratio: 16/9;
-  margin-bottom: 10px;
+/* Hide participants list and adjust padding when chat/AI is open */
+.maximizedLayout.chatOpen,
+.maximizedLayout.aiOpen {
+  padding-right: 0;
 }
 
+.maximizedLayout.chatOpen .participantsList,
+.maximizedLayout.aiOpen .participantsList {
+  display: none;
+}
+
+/* Maximized video */
+.maximizedVideo {
+  flex: 1;
+  height: calc(100vh - 40px);
+  min-width: 0;
+  margin-right: 0;
+}
+
+/* Local video - always fixed size */
+.localVideo {
+  position: fixed !important;
+  bottom: 100px !important;
+  left: 20px !important;
+  width: 240px !important;
+  height: 135px !important;
+  z-index: 999 !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Video wrapper common styles */
 .videoWrapper {
   position: relative;
   border-radius: 10px;
   overflow: hidden;
-  transition: all 0.3s ease;
   background: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .peerVideo {
@@ -123,6 +98,108 @@
   height: 100%;
   object-fit: cover;
   background: black;
+}
+
+/* Chat Room Styles */
+.chatRoom {
+  position: fixed;
+  height: calc(100vh - 40px);
+  right: 20px;
+  top: 20px;
+  background: white;
+  border-radius: 12px;
+  width: 330px;
+  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatRoom.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* AI Chat Drawer Styles */
+.aiChatDrawer {
+  position: fixed !important;
+  right: 20px !important;
+  top: 20px !important;
+  width: 330px !important;
+  height: calc(100vh - 40px) !important;
+  background: white !important;
+  z-index: 1001;
+  transform: translateX(calc(100% + 20px));
+  transition: transform 0.3s ease !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.aiChatDrawer.visible {
+  transform: translateX(0) !important;
+}
+
+/* Participants list */
+.participantsList {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 230px;
+  background: rgba(44, 62, 80, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  z-index: 10;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.participantsList h6 {
+  margin: 0 0 15px 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.participantItem {
+  padding: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.participantItem:hover {
+  opacity: 1;
+}
+
+.participantItem svg {
+  font-size: 20px;
+  opacity: 0.7;
+}
+
+/* Adjust participants list position when chat/AI is open */
+.chatOpen .participantsList,
+.aiOpen .participantsList {
+  right: 370px;
 }
 
 .maximizeButton {
@@ -152,76 +229,160 @@
   z-index: 5;
 }
 
-.chatRoom {
-  position: fixed;
-  height: 90vh;
-  right: 20px;
-  top: 20px;
-  background: white;
-  border-radius: 10px;
-  width: 350px;
-  padding-inline: 20px;
-  z-index: 20;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Adjust main conference view when chat is open */
-.conferenceView.maximizedLayout {
-  padding-right: 370px; /* chat width + some spacing */
-}
-
 .chatContainer {
-  position: relative;
   height: 100%;
-}
-
-.chattingArea {
-  position: absolute;
-  bottom: 10px;
   display: flex;
-  gap: 10px;
-  width: calc(100% - 20px);
-  padding: 10px;
+  flex-direction: column;
+  background: white;
 }
 
 .chattingDisplay {
-  height: calc(100% - 200px);
+  flex: 1;
   overflow-y: auto;
   padding: 20px;
+  background: #f8f9fa;
+}
+
+.chattingArea {
+  padding: 15px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+/* Button container adjustments */
+.buttonContainers {
+  position: fixed;
+  width: auto;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 1000;
+  padding: 15px 25px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50px;
+  display: flex;
+  gap: 20px;
+}
+
+/* Lobby styles */
+.lobbyContainer {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgb(1, 4, 48) 0%, rgb(2, 8, 82) 100%);
+}
+
+.lobbyCard {
+  width: 100%;
+  max-width: 600px;
+  background: white;
+  border-radius: 20px !important;
+  overflow: hidden;
+}
+
+.lobbyVideoPreview {
+  width: 100%;
+  height: 300px;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+}
+
+.lobbyVideoPreview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lobbyControls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  border-radius: 30px;
+}
+
+.lobbyButton {
+  color: white !important;
+}
+
+.lobbyForm {
+  padding: 24px;
+}
+
+.usernameInput {
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.userIcon {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.joinButton {
+  margin-top: 20px !important;
+  height: 48px !important;
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
-  .maximizedLayout {
-    grid-template-columns: 1fr 200px;
-  }
-  
-  .participantsSidebar {
-    width: 200px;
-  }
-  
-  .buttonContainers svg {
-    font-size: 2rem;
-  }
-  
-  .conferenceView:not(.maximizedLayout) .videoWrapper:not(.localVideo) {
-    width: calc(50% - 20px);
+@media (max-width: 1400px) {
+  .maximizedLayout.chatOpen,
+  .maximizedLayout.aiOpen {
+    padding-right: 370px;
   }
 
-  .conferenceView:not(.maximizedLayout) .localVideo {
-    width: 180px !important;
-  }
-
-  .chatRoom {
-    width: 280px;
-  }
-
-  .conferenceView.maximizedLayout {
-    padding-right: 300px;
+  .chatOpen .participantsList,
+  .aiOpen .participantsList {
+    display: none;
   }
 }
 
-/* Add smooth transitions for video size changes */
-video {
-  transition: all 0.3s ease;
+@media (max-width: 768px) {
+  .conferenceView.chatOpen,
+  .conferenceView.aiOpen {
+    width: 100%;
+    padding-right: 0;
+  }
+
+  .conferenceView:not(.maximizedLayout) .videoWrapper:not(.localVideo) {
+    width: calc(100% - 20px);
+  }
+
+  .chatRoom,
+  .aiChatDrawer {
+    width: 100% !important;
+    right: 0 !important;
+    top: 0 !important;
+    height: 100vh !important;
+    border-radius: 0;
+  }
+
+  .participantsList {
+    display: none;
+  }
+
+  .buttonContainers {
+    padding: 10px 20px;
+  }
+
+  .buttonContainers svg {
+    font-size: 24px;
+  }
+
+  .maximizedLayout,
+  .maximizedLayout.chatOpen,
+  .maximizedLayout.aiOpen {
+    padding-right: 0;
+  }
 }
