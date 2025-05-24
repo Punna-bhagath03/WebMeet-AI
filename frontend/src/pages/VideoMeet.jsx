@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import io from 'socket.io-client';
-import { Badge, IconButton, TextField } from '@mui/material';
+import { Badge, IconButton, TextField, Typography, Paper, Box } from '@mui/material';
 import { Button } from '@mui/material';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import VideocamOffIcon from '@mui/icons-material/VideocamOff';
@@ -13,7 +13,9 @@ import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
+import PersonIcon from '@mui/icons-material/Person';
 import server from '../environment';
+import { AuthContext } from '../contexts/AuthContext';
 
 const server_url = 'http://localhost:8000';
 
@@ -27,6 +29,7 @@ export default function VideoMeetComponent() {
   var socketRef = useRef();
   let socketIdRef = useRef();
   let localVideoref = useRef();
+  const { addToUserHistory } = useContext(AuthContext);
 
   let [videoAvailable, setVideoAvailable] = useState(true);
   let [audioAvailable, setAudioAvailable] = useState(true);
@@ -646,30 +649,77 @@ export default function VideoMeetComponent() {
     setMessage('');
   };
 
-  let connect = () => {
-    setAskForUsername(false);
-    getMedia();
+  let connect = async () => {
+    try {
+      setAskForUsername(false);
+      // Get the meeting code from the URL
+      const meetingCode = window.location.pathname.substring(1);
+      // Add to history when connecting
+      if (meetingCode) {
+        await addToUserHistory(meetingCode);
+      }
+      getMedia();
+    } catch (error) {
+      console.error('Error connecting to meeting:', error);
+    }
   };
 
   return (
     <div>
       {askForUsername === true ? (
-        <div>
-          <h2>Enter into Lobby </h2>
-          <TextField
-            id="outlined-basic"
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            variant="outlined"
-          />
-          <Button variant="contained" onClick={connect}>
-            Connect
-          </Button>
+        <div className={styles.lobbyContainer}>
+          <Paper elevation={3} className={styles.lobbyCard}>
+            <Box className={styles.lobbyVideoPreview}>
+              <video ref={localVideoref} autoPlay muted></video>
+              <div className={styles.lobbyControls}>
+                <IconButton 
+                  onClick={handleVideo} 
+                  className={styles.lobbyButton}
+                >
+                  {video ? <VideocamIcon /> : <VideocamOffIcon />}
+                </IconButton>
+                <IconButton 
+                  onClick={handleAudio} 
+                  className={styles.lobbyButton}
+                >
+                  {audio ? <MicIcon /> : <MicOffIcon />}
+                </IconButton>
+              </div>
+            </Box>
 
-          <div>
-            <video ref={localVideoref} autoPlay muted></video>
-          </div>
+            <Box className={styles.lobbyForm}>
+              <Typography variant="h5" gutterBottom>
+                Join Meeting
+              </Typography>
+              <Typography variant="body2" color="textSecondary" gutterBottom>
+                Preview your camera and microphone before joining
+              </Typography>
+              
+              <Box className={styles.usernameInput}>
+                <PersonIcon className={styles.userIcon} />
+                <TextField
+                  fullWidth
+                  id="outlined-basic"
+                  label="Enter your name"
+                  variant="outlined"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="John Doe"
+                />
+              </Box>
+
+              <Button 
+                variant="contained" 
+                onClick={connect}
+                fullWidth
+                size="large"
+                disabled={!username.trim()}
+                className={styles.joinButton}
+              >
+                Join Now
+              </Button>
+            </Box>
+          </Paper>
         </div>
       ) : (
         <div className={styles.meetVideoContainer}>
