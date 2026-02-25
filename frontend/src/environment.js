@@ -1,5 +1,3 @@
-// let IS_PROD = true;
-// const server = IS_PROD ?
-// "http://localhost:8000"
+const SERVER_URL = 'http://localhost:8000';
 
-// export default server;
+export default SERVER_URL;

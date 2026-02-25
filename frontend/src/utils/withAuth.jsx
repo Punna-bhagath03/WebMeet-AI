@@ -1,24 +1,21 @@
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../contexts/AuthContext';
 
 const withAuth = (WrappedComponent) => {
   const AuthComponent = (props) => {
     const router = useNavigate();
-
-    const isAuthenticated = () => {
-      if (localStorage.getItem('token')) {
-        return true;
-      }
-      return false;
-    };
+    const { isAuthenticated, isLoading } = useContext(AuthContext);
 
     useEffect(() => {
-      if (!isAuthenticated()) {
+      if (!isLoading && !isAuthenticated) {
         router('/auth');
       }
-    }, []);
+    }, [isLoading, isAuthenticated, router]);
 
-    return <WrappedComponent {...props} />;
+    if (isLoading) return null;
+
+    return isAuthenticated ? <WrappedComponent {...props} /> : null;
   };
 
   return AuthComponent;

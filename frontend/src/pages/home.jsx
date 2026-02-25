@@ -32,7 +32,7 @@ function HomeComponent() {
   const [newMeetingCode, setNewMeetingCode] = useState('');
   const [error, setError] = useState('');
 
-  const { addToUserHistory } = useContext(AuthContext);
+  const { addToUserHistory, handleLogout } = useContext(AuthContext);
 
   const handleJoinVideoCall = async () => {
     try {
@@ -88,10 +88,7 @@ function HomeComponent() {
           </Tooltip>
           <Tooltip title="Logout">
             <IconButton 
-              onClick={() => {
-                localStorage.removeItem('token');
-                navigate('/auth');
-              }}
+              onClick={handleLogout}
             >
               <LogoutIcon />
             </IconButton>

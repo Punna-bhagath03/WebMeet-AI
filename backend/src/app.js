@@ -1,35 +1,35 @@
 import express from 'express';
-import { createServer } from 'node:http';
-
-import { Server } from 'socket.io';
-
-import mongoose from 'mongoose';
-import { connectToSocket } from './controllers/socketManager.js';
-
 import cors from 'cors';
-import userRoutes from './routers/users.routes.js';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+
+import env from './config/env.js';
+import userRoutes from './routes/users.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 
 const app = express();
-const server = createServer(app);
-const io = connectToSocket(server);
 
-app.set('port', process.env.PORT || 8000);
-app.use(cors());
+app.use(
+	cors({
+		origin: env.corsOrigin,
+		credentials: true,
+	})
+);
+app.use(helmet());
 app.use(express.json({ limit: '40kb' }));
 app.use(express.urlencoded({ limit: '40kb', extended: true }));
+app.use(cookieParser());
 
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
-const start = async () => {
-  app.set('mongo_user');
-  const connectionDb = await mongoose.connect(
-    'mongodb+srv://bhagathpunna:Punna2003@cluster1.q5dxg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster1'
-  );
+app.use((req, res) => {
+	return res.status(404).json({ error: 'Route not found' });
+});
 
-  console.log(`MONGO Connected DB HOst: ${connectionDb.connection.host}`);
-  server.listen(app.get('port'), () => {
-    console.log('LISTENIN ON PORT 8000');
-  });
-};
+app.use((error, req, res, next) => {
+	console.error('Unhandled error:', error);
+	return res.status(500).json({ error: 'Internal server error' });
+});
 
-start();
+export default app;
