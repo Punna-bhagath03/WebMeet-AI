@@ -1,2 +1,13 @@
 backend/node_modules
 frontend/node_modules
+
+# Environment files
+.env
+.env.*
+backend/.env
+frontend/.env
+
+# Keep template env files versioned
+!.env.example
+!backend/.env.example
+!frontend/.env.example
