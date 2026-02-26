@@ -267,73 +267,220 @@
   gap: 20px;
 }
 
-/* Lobby styles */
+
+/* Clean Lobby Styles */
 .lobbyContainer {
   height: 100vh;
   width: 100vw;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgb(1, 4, 48) 0%, rgb(2, 8, 82) 100%);
+  background: radial-gradient(circle at 50% 50%, #f7f9fc 0%, #eef2f6 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px;
 }
 
 .lobbyCard {
+  display: flex;
   width: 100%;
-  max-width: 600px;
+  max-width: 860px;
+  height: min(520px, 90vh);
   background: white;
   border-radius: 20px !important;
+  box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.12);
   overflow: hidden;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Left Panel - Dark Video Area */
+.lobbyLeft {
+  flex: 1.2;
+  background: #0f172a;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.lobbyVideoContainer {
+  width: 100%;
+  height: 100%;
+  background: #1e293b;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: none;
+  border: none;
+  outline: none;
 }
 
 .lobbyVideoPreview {
   width: 100%;
-  height: 300px;
-  position: relative;
-  background: #000;
-  overflow: hidden;
-}
-
-.lobbyVideoPreview video {
-  width: 100%;
   height: 100%;
   object-fit: cover;
+  transform: scaleX(-1); /* Mirror effect */
 }
 
 .lobbyControls {
   position: absolute;
-  bottom: 20px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 8px;
-  border-radius: 30px;
+  gap: 16px;
+  z-index: 10;
 }
 
-.lobbyButton {
+.lobbyControlBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.45) !important;
   color: white !important;
+  transition: all 0.2s ease;
 }
 
-.lobbyForm {
-  padding: 24px;
+.lobbyControlBtn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px);
 }
 
-.usernameInput {
-  margin: 20px 0;
+.lobbyControlBtnOff {
+  background: #ef4444 !important;
+  border-color: #ef4444 !important;
+}
+
+/* Right Panel - Form Area */
+.lobbyRight {
+  flex: 1;
+  background: white;
+  padding: 36px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.lobbyBrand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 14px;
 }
 
-.userIcon {
-  color: rgba(0, 0, 0, 0.54);
+.lobbyBrandIcon {
+  color: #2563eb;
+  font-size: 18px !important;
+}
+
+.lobbyTitle {
+  margin: 0 0 8px 0;
+  padding: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.15;
+  letter-spacing: -0.3px;
+}
+
+.lobbySubtitle {
+  margin: 0 0 24px 0;
+  padding: 0;
+  color: #64748b;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.lobbyFormGroup {
+  margin-bottom: 16px;
+}
+
+.lobbyLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.lobbyInput {
+  width: 100%;
+}
+
+.lobbyInput .MuiOutlinedInput-root {
+  background: #f8fafc;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.lobbyInput .MuiOutlinedInput-notchedOutline {
+  border-color: #e2e8f0;
+}
+
+.lobbyInput .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #cbd5e1;
+}
+
+.lobbyInput .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #2563eb;
+  border-width: 2px;
+}
+
+.lobbyInput input {
+  padding: 11px 14px;
+  font-size: 14px;
+  color: #0f172a;
 }
 
 .joinButton {
-  margin-top: 20px !important;
-  height: 48px !important;
+  margin-top: 8px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  background: #2563eb !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.18) !important;
+  transition: transform 0.1s ease !important;
 }
+
+.joinButton:hover {
+  background: #1d4ed8 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3) !important;
+}
+
+.joinButton:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  .lobbyCard {
+    flex-direction: column;
+    height: auto;
+    max-width: 500px;
+  }
+
+  .lobbyLeft {
+    height: 300px;
+    padding: 0;
+  }
+
+  .lobbyVideoContainer {
+    border-radius: 0;
+  }
+
+  .lobbyRight {
+    padding: 32px;
+  }
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 1400px) {

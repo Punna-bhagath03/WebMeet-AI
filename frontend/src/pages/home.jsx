@@ -2,26 +2,18 @@ import React, { useContext, useState } from 'react';
 import withAuth from '../utils/withAuth';
 import { useNavigate } from 'react-router-dom';
 import '../App.css';
-import { 
-  Button, 
-  IconButton, 
-  TextField, 
-  Typography, 
-  Box, 
-  Paper,
+import {
+  Button,
+  IconButton,
+  TextField,
   Snackbar,
-  Tooltip,
-  AppBar,
-  Toolbar,
-  Container,
-  Grid,
-  Card,
-  CardContent
+  Tooltip
 } from '@mui/material';
 import RestoreIcon from '@mui/icons-material/Restore';
 import LogoutIcon from '@mui/icons-material/Logout';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import VideocamOutlinedIcon from '@mui/icons-material/VideocamOutlined';
 import { AuthContext } from '../contexts/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -76,135 +68,132 @@ function HomeComponent() {
 
   return (
     <div className="homeContainer">
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar>
-          <Typography variant="h5" component="div" sx={{ flexGrow: 1 }}>
-            WebMeet-AI
-          </Typography>
+      <header className="homeHeader">
+        <button
+          type="button"
+          className="landingBrand homeBrandButton"
+          onClick={() => navigate('/')}
+        >
+          <div className="landingBrandIcon">
+            <VideocamOutlinedIcon fontSize="small" />
+          </div>
+          <h2>WebMeet AI</h2>
+        </button>
+
+        <div className="homeHeaderActions">
           <Tooltip title="Meeting History">
-            <IconButton onClick={() => navigate('/history')}>
+            <IconButton
+              aria-label="meeting history"
+              onClick={() => navigate('/history')}
+              className="homeHeaderIconButton"
+            >
               <RestoreIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Logout">
-            <IconButton 
+            <IconButton
+              aria-label="logout"
               onClick={handleLogout}
+              className="homeHeaderIconButton"
             >
               <LogoutIcon />
             </IconButton>
           </Tooltip>
-        </Toolbar>
-      </AppBar>
+        </div>
+      </header>
 
-      <Container maxWidth="lg" sx={{ mt: 4 }}>
-        <Grid container spacing={3}>
-          {/* Join Meeting Section */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-              <Typography variant="h5" gutterBottom>
-                Join a Meeting
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                Enter a meeting code to join an existing meeting
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                <TextField
+      <main className="homeMain">
+        <section className="homeCardsRow">
+          <div className="homeCard">
+            <h2 className="homeCardTitle">Join a Meeting</h2>
+            <p className="homeCardDescription">
+              Enter a meeting code to hop into an existing call.
+            </p>
+            <TextField
+              fullWidth
+              label="Meeting Code"
+              variant="outlined"
+              value={meetingCode}
+              onChange={(e) => setMeetingCode(e.target.value)}
+              placeholder="Meeting code"
+              className="homeInput homeJoinInput"
+            />
+            <Button
+              type="button"
+              variant="contained"
+              fullWidth
+              disableElevation
+              onClick={handleJoinVideoCall}
+              disabled={!meetingCode.trim()}
+              startIcon={<VideocamIcon />}
+              className="homeActionButton"
+            >
+              Join Meeting
+            </Button>
+          </div>
+
+          <div className="homeCard">
+            <h2 className="homeCardTitle">Create a Meeting</h2>
+            <p className="homeCardDescription">
+              Generate a fresh code and invite teammates in seconds.
+            </p>
+            {newMeetingCode ? (
+              <>
+                <div className="homeCodeRow">
+                  <TextField
+                    fullWidth
+                    value={newMeetingCode}
+                    variant="outlined"
+                    InputProps={{ readOnly: true }}
+                    className="homeInput homeGeneratedCodeInput"
+                  />
+                  <Tooltip title="Copy code">
+                    <IconButton
+                      aria-label="copy meeting code"
+                      onClick={handleCopyCode}
+                      className="homeCopyButton"
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+                <Button
+                  type="button"
+                  variant="contained"
                   fullWidth
-                  label="Meeting Code"
-                  variant="outlined"
-                  value={meetingCode}
-                  onChange={(e) => setMeetingCode(e.target.value)}
-                  placeholder="Enter meeting code"
-                  sx={{ mb: 2 }}
-                />
-                <Button 
-                  variant="contained" 
-                  fullWidth 
-                  onClick={handleJoinVideoCall}
-                  disabled={!meetingCode.trim()}
+                  disableElevation
+                  onClick={handleJoinNewMeeting}
                   startIcon={<VideocamIcon />}
+                  className="homeActionButton"
                 >
                   Join Meeting
                 </Button>
-              </Box>
-            </Paper>
-          </Grid>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="contained"
+                fullWidth
+                disableElevation
+                onClick={handleCreateMeeting}
+                startIcon={<VideocamIcon />}
+                className="homeActionButton"
+              >
+                Create Meeting
+              </Button>
+            )}
+          </div>
+        </section>
 
-          {/* Create Meeting Section */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-              <Typography variant="h5" gutterBottom>
-                Create a Meeting
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                Generate a new meeting code and invite others
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {newMeetingCode ? (
-                  <>
-                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                      <TextField
-                        fullWidth
-                        value={newMeetingCode}
-                        variant="outlined"
-                        InputProps={{
-                          readOnly: true,
-                        }}
-                      />
-                      <IconButton onClick={handleCopyCode}>
-                        <ContentCopyIcon />
-                      </IconButton>
-                    </Box>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={handleJoinNewMeeting}
-                      startIcon={<VideocamIcon />}
-                    >
-                      Join Meeting
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={handleCreateMeeting}
-                    startIcon={<VideocamIcon />}
-                  >
-                    Create Meeting
-                  </Button>
-                )}
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Tips Section */}
-          <Grid item xs={12}>
-            <Paper elevation={3} sx={{ p: 3, borderRadius: 2, bgcolor: 'primary.light', color: 'white' }}>
-              <Typography variant="h6" gutterBottom>
-                Quick Tips
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={4}>
-                  <Typography variant="body2">
-                    • Create a meeting and share the code with participants
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Typography variant="body2">
-                    • Join meetings using the provided meeting code
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Typography variant="body2">
-                    • Check your meeting history to rejoin recent meetings
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Container>
+        <section className="homeTipsCard">
+          <h3>Quick Tips</h3>
+          <ul className="homeTipsList">
+            <li>Create a meeting and share the code with participants.</li>
+            <li>Join meetings instantly using the provided code.</li>
+            <li>Check your meeting history to hop back into recent calls.</li>
+          </ul>
+        </section>
+      </main>
 
       <Snackbar
         open={showCopiedAlert}

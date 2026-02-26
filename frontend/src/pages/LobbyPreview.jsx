@@ -23,13 +23,20 @@ const LobbyPreview = React.memo(function LobbyPreview({
   onToggleAudio,
 }) {
   return (
-    <Box className={styles.lobbyVideoPreview}>
-      <video ref={setLocalVideoRef} autoPlay muted playsInline />
+
+    <Box className={styles.lobbyVideoContainer}>
+      <video ref={setLocalVideoRef} autoPlay muted playsInline className={styles.lobbyVideoPreview} />
       <div className={styles.lobbyControls}>
-        <IconButton onClick={onToggleVideo} className={styles.lobbyButton}>
+        <IconButton
+          onClick={onToggleVideo}
+          className={`${styles.lobbyControlBtn} ${!video ? styles.lobbyControlBtnOff : ''}`}
+        >
           {video ? <VideocamIcon /> : <VideocamOffIcon />}
         </IconButton>
-        <IconButton onClick={onToggleAudio} className={styles.lobbyButton}>
+        <IconButton
+          onClick={onToggleAudio}
+          className={`${styles.lobbyControlBtn} ${!audio ? styles.lobbyControlBtnOff : ''}`}
+        >
           {audio ? <MicIcon /> : <MicOffIcon />}
         </IconButton>
       </div>

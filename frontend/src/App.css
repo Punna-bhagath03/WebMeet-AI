@@ -8,7 +8,215 @@ body {
 /* Home page styles */
 .homeContainer {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  width: 100%;
+  background: linear-gradient(180deg, #edf1f7 0%, #dfe7f5 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px 48px;
+  color: #0f172a;
+}
+
+.homeHeader {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.homeHeader .landingBrand h2 {
+  font-size: 32px;
+}
+
+.homeBrandButton {
+  text-align: left;
+}
+
+.homeHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.homeHeaderIconButton {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-radius: 14px !important;
+  width: 46px;
+  height: 46px;
+  color: #0f172a;
+}
+
+.homeHeaderIconButton:hover {
+  background: #ffffff !important;
+}
+
+.homeMain {
+  width: 100%;
+  max-width: 1100px;
+  margin: 34px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.homeCardsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.homeCard {
+  background: #ffffff;
+  border-radius: 22px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  padding: 28px 32px 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.homeCardTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.homeCardDescription {
+  margin: 10px 0 16px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.homeCard .MuiTextField-root {
+  width: 100%;
+}
+
+.homeInput {
+  margin-bottom: 18px;
+}
+
+.homeJoinInput {
+  max-width: none;
+  margin-bottom: 20px;
+}
+
+.homeGeneratedCodeInput {
+  width: 100%;
+}
+
+.homeInput .MuiOutlinedInput-root {
+  border-radius: 14px;
+  background: #fdfefe;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.homeJoinInput .MuiOutlinedInput-input {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.homeInput .MuiOutlinedInput-notchedOutline {
+  border-color: transparent;
+}
+
+.homeInput .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #5a7cf0;
+}
+
+.homeCodeRow {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.homeCodeRow .homeInput {
+  margin: 0;
+  max-width: none;
+}
+
+.homeCopyButton {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+  color: #2563eb !important;
+}
+
+.homeActionButton {
+  margin-top: 18px;
+  padding: 14px 20px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, #2d67e5 0%, #1f52d4 100%);
+  box-shadow: 0 10px 20px rgba(32, 85, 211, 0.25);
+  width: 260px !important;
+  align-self: center;
+}
+
+.homeActionButton.Mui-disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  box-shadow: none;
+}
+
+.homeTipsCard {
+  background: linear-gradient(135deg, #4aa4ff 0%, #2f6bff 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 22px 26px;
+  box-shadow: 0 14px 28px rgba(47, 107, 255, 0.28);
+}
+
+.homeTipsCard h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.homeTipsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.homeTipsList li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13.5px;
+}
+
+.homeTipsList li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 640px) {
+  .homeContainer {
+    padding: 24px 16px 40px;
+  }
+
+  .homeCard {
+    padding: 24px;
+  }
+
+  .homeJoinInput {
+    max-width: 100%;
+  }
 }
 
 /* History page styles */
@@ -268,6 +476,175 @@ body {
   font-size: 18px;
 }
 
+/* Auth page styles */
+.authPageContainer {
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(180deg, #edf1f7 0%, #e8edf6 100%);
+}
+
+.authHeader {
+  padding-bottom: 12px;
+}
+
+.authHomeButton,
+.homeBrandButton {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.authHomeButton:focus-visible,
+.homeBrandButton:focus-visible {
+  outline: 2px solid rgba(76, 128, 255, 0.6);
+  outline-offset: 6px;
+  border-radius: 16px;
+}
+
+.authHeader .landingBrandIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.authHeader .landingBrand h2 {
+  font-size: 30px;
+  letter-spacing: -0.4px;
+}
+
+.authMain {
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: calc(100vh - 102px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 24px 42px;
+}
+
+.authCard {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 22px !important;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(180deg, #fbfdff 0%, #f4f6ff 100%) !important;
+  box-shadow: 0 18px 36px rgba(71, 85, 105, 0.14) !important;
+  padding: 28px 26px;
+}
+
+.authTabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: rgba(233, 238, 247, 0.9);
+  border: 1px solid #d9e1f0;
+  border-radius: 16px;
+  padding: 6px;
+}
+
+.authTabButton {
+  border: 0;
+  border-radius: 12px;
+  min-height: 38px;
+  background: transparent;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.authTabButton.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #4c80ff 0%, #1d5af5 100%);
+  box-shadow: 0 6px 14px rgba(29, 90, 245, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.authForm {
+  margin-top: 14px;
+}
+.authFormFields {
+  animation: authFormFade 260ms ease;
+  will-change: opacity, transform;
+}
+
+@keyframes authFormFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.authTitle {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #0f172a;
+  margin: 2px 0 6px !important;
+}
+
+.authSubtitle {
+  font-size: 13px !important;
+  color: #7a8699;
+  margin: 0 0 10px !important;
+}
+
+.authForm .MuiFormControl-root {
+  margin: 8px 0;
+}
+
+.authForm .MuiOutlinedInput-root {
+  background: #fefefe;
+  border-radius: 13px;
+  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.06);
+}
+
+.authForm .MuiOutlinedInput-input {
+  padding-top: 14px;
+  padding-bottom: 14px;
+  font-size: 15px;
+}
+
+.authForm .MuiInputLabel-root {
+  font-size: 14px;
+  color: #8a94a6;
+}
+
+.authErrorText {
+  min-height: 20px;
+  margin: 7px 0 1px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.authSubmitButton {
+  margin-top: 8px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  min-height: 46px !important;
+  border-radius: 11px !important;
+  text-transform: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  background: linear-gradient(135deg, #4c7efc 0%, #1d5af5 100%) !important;
+  box-shadow: 0 10px 18px rgba(52, 97, 255, 0.28) !important;
+  width: 220px;
+  justify-content: center;
+}
+
+.authSubmitButton:hover {
+  background: linear-gradient(135deg, #356de3 0%, #285bc9 100%) !important;
+}
+
 /* Responsive styles */
 @media (max-width: 1200px) {
   .landingHeader,
@@ -298,6 +675,10 @@ body {
   .landingHeroButton {
     width: 100%;
   }
+
+  .authMain {
+    min-height: calc(100vh - 88px);
+  }
 }
 
 @media (max-width: 768px) {
@@ -322,6 +703,19 @@ body {
 
   .landingFeatureCard h3 {
     font-size: 24px;
+  }
+
+  .authCard {
+    padding: 16px;
+    border-radius: 18px !important;
+  }
+
+  .authHeader .landingBrand h2 {
+    font-size: 26px;
+  }
+
+  .authTitle {
+    font-size: 19px !important;
   }
 
   .landingFeatureActions {

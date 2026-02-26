@@ -4,9 +4,6 @@ import {
   Badge, 
   IconButton, 
   TextField, 
-  Typography, 
-  Paper, 
-  Box,
 } from '@mui/material';
 import { Button } from '@mui/material';
 import VideocamIcon from '@mui/icons-material/Videocam';
@@ -18,7 +15,6 @@ import MicOffIcon from '@mui/icons-material/MicOff';
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
-import PersonIcon from '@mui/icons-material/Person';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SERVER_URL from '../environment';
 import {
@@ -749,51 +745,71 @@ export default function VideoMeetComponent() {
   };
 
   return (
+
     <div>
       {askForUsername === true ? (
         <div className={styles.lobbyContainer}>
-          <Paper elevation={3} className={styles.lobbyCard}>
-            <LobbyPreview
-              setLocalVideoRef={setLocalVideoRef}
-              video={video}
-              audio={audio}
-              onToggleVideo={handleVideo}
-              onToggleAudio={handleAudio}
-            />
+          <div className={styles.lobbyCard}>
+            <div className={styles.lobbyLeft}>
+              <LobbyPreview
+                setLocalVideoRef={setLocalVideoRef}
+                video={video}
+                audio={audio}
+                onToggleVideo={handleVideo}
+                onToggleAudio={handleAudio}
+              />
+            </div>
 
-            <Box className={styles.lobbyForm}>
-              <Typography variant="h5" gutterBottom>
-                Join Meeting
-              </Typography>
-              <Typography variant="body2" color="textSecondary" gutterBottom>
-                Preview your camera and microphone before joining
-              </Typography>
-              
-              <Box className={styles.usernameInput}>
-                <PersonIcon className={styles.userIcon} />
+            <div className={styles.lobbyRight}>
+              <div className={styles.lobbyBrand}>
+                <VideocamIcon className={styles.lobbyBrandIcon} />
+                <span>WebMeet AI</span>
+              </div>
+
+              <p className={styles.lobbyTitle}>
+                Ready to join?
+              </p>
+              <p className={styles.lobbySubtitle}>
+                Configure your settings and join the room.
+              </p>
+
+              <div className={styles.lobbyFormGroup}>
+                <label className={styles.lobbyLabel}>Meeting ID or Link</label>
                 <TextField
                   fullWidth
-                  id="outlined-basic"
-                  label="Enter your name"
+                  variant="outlined"
+                  value={window.location.pathname.substring(1)}
+                  InputProps={{
+                    readOnly: true,
+                  }}
+                  className={styles.lobbyInput}
+                />
+              </div>
+
+              <div className={styles.lobbyFormGroup}>
+                <label className={styles.lobbyLabel}>Your Name</label>
+                <TextField
+                  fullWidth
+                  id="username-input"
                   variant="outlined"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="John Doe"
+                  className={styles.lobbyInput}
                 />
-              </Box>
+              </div>
 
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 onClick={connect}
                 fullWidth
-                size="large"
+                size="medium"
                 disabled={!username.trim()}
                 className={styles.joinButton}
               >
                 Join Now
               </Button>
-            </Box>
-          </Paper>
+            </div>
+          </div>
         </div>
       ) : (
         <div className={styles.meetVideoContainer}>
