@@ -6,6 +6,148 @@ import SendIcon from '@mui/icons-material/Send';
 import styles from '../styles/videoComponent.module.css';
 import { client as apiClient } from '../contexts/AuthContext';
 
+/**
+ * Lightweight inline markdown → React elements renderer.
+ * Handles: headings (##/###), bold (**), italic (*), inline code (`),
+ * unordered lists (- / *), ordered lists (1.), horizontal rules (---),
+ * and plain line breaks. No external dependency required.
+ */
+function renderMarkdown(text) {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+  const elements = [];
+  let i = 0;
+
+  const inlineFormat = (str, key) => {
+    // Split str by bold, italic, code markers and return spans
+    const parts = [];
+    // Regex: matches **bold**, *italic*, `code`
+    const pattern = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+    let lastIdx = 0;
+    let m;
+    let pid = 0;
+    while ((m = pattern.exec(str)) !== null) {
+      if (m.index > lastIdx) {
+        parts.push(<span key={`${key}-t${pid++}`}>{str.slice(lastIdx, m.index)}</span>);
+      }
+      if (m[2] !== undefined) {
+        parts.push(<strong key={`${key}-b${pid++}`}>{m[2]}</strong>);
+      } else if (m[3] !== undefined) {
+        parts.push(<em key={`${key}-i${pid++}`}>{m[3]}</em>);
+      } else if (m[4] !== undefined) {
+        parts.push(
+          <code key={`${key}-c${pid++}`} style={{
+            background: '#f1f5f9', borderRadius: 4, padding: '1px 5px',
+            fontFamily: 'monospace', fontSize: '0.88em', color: '#0f172a',
+          }}>
+            {m[4]}
+          </code>
+        );
+      }
+      lastIdx = m.index + m[0].length;
+    }
+    if (lastIdx < str.length) {
+      parts.push(<span key={`${key}-t${pid++}`}>{str.slice(lastIdx)}</span>);
+    }
+    return parts.length > 0 ? parts : str;
+  };
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Horizontal rule
+    if (/^-{3,}$|^\*{3,}$/.test(line.trim())) {
+      elements.push(<hr key={i} style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '8px 0' }} />);
+      i++; continue;
+    }
+
+    // H2 heading
+    if (/^## /.test(line)) {
+      elements.push(
+        <p key={i} style={{ fontWeight: 700, fontSize: '0.97em', color: '#0f172a', margin: '10px 0 4px 0' }}>
+          {inlineFormat(line.replace(/^## /, ''), `h2-${i}`)}
+        </p>
+      );
+      i++; continue;
+    }
+
+    // H3 heading
+    if (/^### /.test(line)) {
+      elements.push(
+        <p key={i} style={{ fontWeight: 700, fontSize: '0.92em', color: '#334155', margin: '8px 0 3px 0' }}>
+          {inlineFormat(line.replace(/^### /, ''), `h3-${i}`)}
+        </p>
+      );
+      i++; continue;
+    }
+
+    // H1 heading
+    if (/^# /.test(line)) {
+      elements.push(
+        <p key={i} style={{ fontWeight: 700, fontSize: '1em', color: '#0f172a', margin: '10px 0 4px 0' }}>
+          {inlineFormat(line.replace(/^# /, ''), `h1-${i}`)}
+        </p>
+      );
+      i++; continue;
+    }
+
+    // Collect unordered list block
+    if (/^[-*] /.test(line)) {
+      const items = [];
+      while (i < lines.length && /^[-*] /.test(lines[i])) {
+        items.push(
+          <li key={i} style={{ marginBottom: 3 }}>
+            {inlineFormat(lines[i].replace(/^[-*] /, ''), `ul-${i}`)}
+          </li>
+        );
+        i++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} style={{ margin: '4px 0', paddingLeft: 18 }}>
+          {items}
+        </ul>
+      );
+      continue;
+    }
+
+    // Collect ordered list block
+    if (/^\d+\. /.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\d+\. /.test(lines[i])) {
+        items.push(
+          <li key={i} style={{ marginBottom: 3 }}>
+            {inlineFormat(lines[i].replace(/^\d+\. /, ''), `ol-${i}`)}
+          </li>
+        );
+        i++;
+      }
+      elements.push(
+        <ol key={`ol-${i}`} style={{ margin: '4px 0', paddingLeft: 18 }}>
+          {items}
+        </ol>
+      );
+      continue;
+    }
+
+    // Empty line → small gap
+    if (line.trim() === '') {
+      elements.push(<div key={i} style={{ height: 6 }} />);
+      i++; continue;
+    }
+
+    // Plain paragraph
+    elements.push(
+      <p key={i} style={{ margin: '3px 0', lineHeight: 1.6 }}>
+        {inlineFormat(line, `p-${i}`)}
+      </p>
+    );
+    i++;
+  }
+
+  return elements;
+}
+
 const AIChatPanel = React.memo(function AIChatPanel({ visible, onClose }) {
   const [aiMessage, setAIMessage] = useState('');
   const [aiChatHistory, setAIChatHistory] = useState([]);
@@ -84,7 +226,9 @@ const AIChatPanel = React.memo(function AIChatPanel({ visible, onClose }) {
                 : styles.aiMsgBubbleAI
             }
           >
-            {chat.message}
+            {chat.type === 'ai'
+              ? renderMarkdown(chat.message)
+              : chat.message}
           </div>
         ))}
         {isAILoading && (

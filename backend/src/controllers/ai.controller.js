@@ -23,12 +23,20 @@ const chatWithAI = async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    const model = getAIClient().getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = getAIClient().getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction:
+        'You are a concise AI assistant inside a video meeting app. ' +
+        'Always give complete, well-structured answers. ' +
+        'Keep every response under 120 words. ' +
+        'If the answer needs more detail, summarise the key points in bullet form and end with a complete sentence. ' +
+        'Never stop mid-sentence — always finish your last sentence before stopping.',
+    });
 
     const chat = model.startChat({
       history: [],
       generationConfig: {
-        maxOutputTokens: 1000,
+        maxOutputTokens: 700,
       },
     });
 

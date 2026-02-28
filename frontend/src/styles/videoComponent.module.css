@@ -661,13 +661,25 @@
   align-self: flex-start;
   background: white;
   color: #334155;
-  border-radius: 16px 16px 16px 4px;
-  padding: 8px 14px;
+  border-radius: 12px;
+  padding: 10px 14px;
   font-size: 13.5px;
-  max-width: 85%;
+  width: 100%;
+  box-sizing: border-box;
   word-break: break-word;
-  line-height: 1.5;
+  line-height: 1.6;
   border: 1px solid #e2e8f0;
+}
+
+.aiMsgBubbleAI p,
+.aiMsgBubbleAI ul,
+.aiMsgBubbleAI ol {
+  margin: 3px 0;
+}
+
+.aiMsgBubbleAI ul,
+.aiMsgBubbleAI ol {
+  padding-left: 18px;
 }
 
 .aiMsgBubbleError {
