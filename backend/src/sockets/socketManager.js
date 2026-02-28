@@ -6,6 +6,7 @@ let connections = {};
 let messages = {};
 let timeOnline = {};
 let roomLastActiveAt = {};
+let usernames = {};   // socketId -> username
 
 const MAX_MESSAGES_PER_ROOM = 100;
 const MAX_ROOM_PARTICIPANTS = 10;
@@ -105,14 +106,22 @@ export const connectToSocket = (server) => {
 
       connections[path].push(socket.id);
       roomLastActiveAt[path] = Date.now();
+      usernames[socket.id] = socket.data.user.username;
 
       timeOnline[socket.id] = new Date();
+
+      // Build a snapshot of socketId→username for everyone in the room
+      const roomUsernames = {};
+      connections[path].forEach((sid) => {
+        if (usernames[sid]) roomUsernames[sid] = usernames[sid];
+      });
 
       for (let a = 0; a < connections[path].length; a++) {
         io.to(connections[path][a]).emit(
           'user-joined',
           socket.id,
-          connections[path]
+          connections[path],
+          roomUsernames
         );
       }
 
@@ -218,6 +227,7 @@ export const connectToSocket = (server) => {
       }
 
       delete timeOnline[socket.id];
+      delete usernames[socket.id];
     });
   });
 

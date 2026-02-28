@@ -1,17 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import {
-  IconButton,
-  TextField,
-  Typography,
-  Paper,
-  Box,
-  CircularProgress,
-  List,
-  ListItem,
-} from '@mui/material';
-import { Button } from '@mui/material';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { IconButton, CircularProgress } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
 import styles from '../styles/videoComponent.module.css';
 import { client as apiClient } from '../contexts/AuthContext';
 
@@ -19,118 +10,114 @@ const AIChatPanel = React.memo(function AIChatPanel({ visible, onClose }) {
   const [aiMessage, setAIMessage] = useState('');
   const [aiChatHistory, setAIChatHistory] = useState([]);
   const [isAILoading, setIsAILoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (visible && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [aiChatHistory, visible]);
 
   const handleAIChat = useCallback(async () => {
     if (!aiMessage.trim()) return;
 
-    const currentMessage = aiMessage;
+    const currentMessage = aiMessage.trim();
     setAIMessage('');
 
     try {
       setIsAILoading(true);
-      setAIChatHistory(prev => [...prev, { type: 'user', message: currentMessage }]);
+      setAIChatHistory((prev) => [...prev, { type: 'user', message: currentMessage }]);
 
       const response = await apiClient.post('/ai/chat', { message: currentMessage });
 
-      setAIChatHistory(prev => [...prev, { type: 'ai', message: response.data.response }]);
+      setAIChatHistory((prev) => [...prev, { type: 'ai', message: response.data.response }]);
     } catch (error) {
       console.error('Error getting AI response:', error);
-      setAIChatHistory(prev => [...prev, {
-        type: 'error',
-        message: 'Failed to get AI response. Please try again.'
-      }]);
+      const serverError =
+        error?.response?.data?.error ||
+        'Failed to get AI response. Please try again.';
+      setAIChatHistory((prev) => [
+        ...prev,
+        { type: 'error', message: serverError },
+      ]);
     } finally {
       setIsAILoading(false);
     }
   }, [aiMessage]);
 
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter') {
-      handleAIChat();
-    }
-  }, [handleAIChat]);
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleAIChat();
+      }
+    },
+    [handleAIChat]
+  );
 
   return (
-    <Box className={`${styles.aiChatDrawer} ${visible ? styles.visible : ''}`}>
-      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{
-          p: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: 1,
-          borderColor: 'divider',
-          bgcolor: 'white'
-        }}>
-          <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SmartToyIcon /> AI Assistant
-          </Typography>
-          <IconButton onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
+    <div className={`${styles.aiChatDrawer} ${visible ? styles.visible : ''}`}>
+      {/* Header */}
+      <div className={styles.panelHeader}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <SmartToyIcon sx={{ fontSize: 18, color: '#64748b' }} />
+          <span className={styles.panelTitle}>AI Assistant</span>
+        </div>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#64748b' }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </div>
 
-        <Box sx={{
-          flexGrow: 1,
-          overflow: 'auto',
-          p: 2,
-          bgcolor: '#f8f9fa'
-        }}>
-          <List>
-            {aiChatHistory.map((chat, index) => (
-              <ListItem key={index} sx={{
-                flexDirection: 'column',
-                alignItems: chat.type === 'user' ? 'flex-end' : 'flex-start',
-                px: 0
-              }}>
-                <Paper elevation={1} sx={{
-                  p: 2,
-                  bgcolor: chat.type === 'user' ? 'primary.light' : 'white',
-                  color: chat.type === 'user' ? 'white' : 'text.primary',
-                  maxWidth: '80%',
-                  borderRadius: 2
-                }}>
-                  <Typography variant="body2">{chat.message}</Typography>
-                </Paper>
-              </ListItem>
-            ))}
-            {isAILoading && (
-              <ListItem sx={{ justifyContent: 'center' }}>
-                <CircularProgress size={24} />
-              </ListItem>
-            )}
-          </List>
-        </Box>
-
-        <Box sx={{
-          p: 2,
-          borderTop: 1,
-          borderColor: 'divider',
-          bgcolor: 'white'
-        }}>
-          <TextField
-            fullWidth
-            variant="outlined"
-            placeholder="Ask AI anything..."
-            value={aiMessage}
-            onChange={(e) => setAIMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isAILoading}
-            size="small"
-            sx={{ mb: 1 }}
-          />
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleAIChat}
-            disabled={isAILoading || !aiMessage.trim()}
+      {/* Messages */}
+      <div className={styles.aiChatMessages}>
+        {aiChatHistory.length === 0 && (
+          <div className={styles.noMessages}>Ask the AI anything about your meeting!</div>
+        )}
+        {aiChatHistory.map((chat, index) => (
+          <div
+            key={index}
+            className={
+              chat.type === 'user'
+                ? styles.aiMsgBubbleUser
+                : chat.type === 'error'
+                ? styles.aiMsgBubbleError
+                : styles.aiMsgBubbleAI
+            }
           >
-            {isAILoading ? 'Processing...' : 'Ask AI'}
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+            {chat.message}
+          </div>
+        ))}
+        {isAILoading && (
+          <div className={styles.aiMsgBubbleAI} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <CircularProgress size={14} sx={{ color: '#64748b' }} />
+            <span style={{ fontSize: 13, color: '#64748b' }}>Thinking…</span>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className={styles.aiChatInputArea}>
+        <input
+          className={styles.chatInputField}
+          placeholder="Ask AI anything..."
+          value={aiMessage}
+          onChange={(e) => setAIMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={isAILoading}
+        />
+        <button
+          className={styles.chatSendBtn}
+          onClick={handleAIChat}
+          disabled={isAILoading || !aiMessage.trim()}
+          type="button"
+        >
+          <SendIcon sx={{ fontSize: 16 }} />
+        </button>
+      </div>
+    </div>
   );
 });
 
 export default AIChatPanel;
+

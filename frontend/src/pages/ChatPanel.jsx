@@ -1,78 +1,96 @@
-import React, { useState, useCallback } from 'react';
-import {
-  IconButton,
-  TextField,
-  Typography,
-  Box,
-} from '@mui/material';
-import { Button } from '@mui/material';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import SendIcon from '@mui/icons-material/Send';
+import ChatIcon from '@mui/icons-material/Chat';
 import styles from '../styles/videoComponent.module.css';
 
 const ChatPanel = React.memo(function ChatPanel({ visible, messages, onClose, onSend }) {
   const [message, setMessage] = useState('');
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (visible && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, visible]);
 
   const handleSend = useCallback(() => {
-    if (message.trim()) {
-      onSend(message);
-      setMessage('');
-    }
+    if (!message.trim()) return;
+    onSend(message.trim());
+    setMessage('');
   }, [message, onSend]);
 
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter') {
-      handleSend();
-    }
-  }, [handleSend]);
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    },
+    [handleSend]
+  );
+
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const d = new Date(timestamp);
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   return (
     <div className={`${styles.chatRoom} ${visible ? styles.visible : ''}`}>
-      <div className={styles.chatContainer}>
-        <Box sx={{
-          p: 2,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: 1,
-          borderColor: 'divider',
-          bgcolor: 'white'
-        }}>
-          <Typography variant="h6">Chat</Typography>
-          <IconButton onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <div className={styles.chattingDisplay}>
-          {messages.length !== 0 ? (
-            messages.map((item, index) => (
-              <div style={{ marginBottom: '20px' }} key={index}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{item.sender}</Typography>
-                <Typography variant="body2">{item.data}</Typography>
+      {/* Header */}
+      <div className={styles.panelHeader}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ChatIcon sx={{ fontSize: 18, color: '#64748b' }} />
+          <span className={styles.panelTitle}>In-Call Messages</span>
+        </div>
+        <IconButton onClick={onClose} size="small" sx={{ color: '#64748b' }}>
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </div>
+
+      {/* Messages */}
+      <div className={styles.chattingDisplay}>
+        {messages.length === 0 ? (
+          <div className={styles.noMessages}>No messages yet. Say hi! 👋</div>
+        ) : (
+          messages.map((item, index) => (
+            <div key={index} className={styles.chatMsgRow}>
+              <div className={styles.chatMsgSenderLine}>
+                <span className={styles.chatMsgSender}>{item.sender}</span>
+                {item.timestamp && (
+                  <span className={styles.chatMsgTime}>{formatTime(item.timestamp)}</span>
+                )}
               </div>
-            ))
-          ) : (
-            <Typography variant="body2" color="textSecondary" sx={{ textAlign: 'center', mt: 2 }}>
-              No Messages Yet
-            </Typography>
-          )}
-        </div>
-        <div className={styles.chattingArea}>
-          <TextField
-            fullWidth
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message..."
-            variant="outlined"
-            size="small"
-            onKeyPress={handleKeyPress}
-          />
-          <Button variant="contained" onClick={handleSend}>
-            Send
-          </Button>
-        </div>
+              <div className={styles.chatMsgText}>{item.data}</div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className={styles.chattingArea}>
+        <input
+          className={styles.chatInputField}
+          placeholder="Type a message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          className={styles.chatSendBtn}
+          onClick={handleSend}
+          disabled={!message.trim()}
+          type="button"
+        >
+          <SendIcon sx={{ fontSize: 16 }} />
+        </button>
       </div>
     </div>
   );
 });
 
 export default ChatPanel;
+

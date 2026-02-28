@@ -16,19 +16,16 @@ import {
   Tooltip,
   Divider,
   Button,
-  Snackbar,
-  ListItemSecondary,
-  Grid
+  Snackbar
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { format } from 'date-fns';
 
 function History() {
   const navigate = useNavigate();
-  const { getHistoryOfUser, addToUserHistory } = useContext(AuthContext);
+  const { getHistoryOfUser } = useContext(AuthContext);
   const [showCopiedAlert, setShowCopiedAlert] = useState(false);
   const [meetings, setMeetings] = useState({});
   const [loading, setLoading] = useState(true);

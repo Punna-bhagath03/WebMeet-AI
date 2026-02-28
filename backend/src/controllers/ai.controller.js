@@ -38,7 +38,33 @@ const chatWithAI = async (req, res) => {
 
     return res.json({ response: text });
   } catch (error) {
-    console.error('Error in AI chat:', error);
+    const providerStatus = error?.status || error?.response?.status;
+    const providerMessage = error?.message || 'Unknown AI provider error';
+
+    console.error('Error in AI chat:', {
+      status: providerStatus,
+      message: providerMessage,
+    });
+
+    if (providerStatus === 403) {
+      return res.status(502).json({
+        error:
+          'AI provider rejected the API key (invalid, restricted, or reported leaked). Please rotate GEMINI_API_KEY.',
+      });
+    }
+
+    if (providerStatus === 429) {
+      return res.status(429).json({
+        error: 'AI provider rate limit/quota exceeded. Please try again later.',
+      });
+    }
+
+    if (!env.geminiApiKey) {
+      return res.status(500).json({
+        error: 'GEMINI_API_KEY is not configured on the backend.',
+      });
+    }
+
     return res.status(500).json({ error: 'Failed to get AI response' });
   }
 };
