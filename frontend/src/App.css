@@ -26,7 +26,7 @@ body {
 }
 
 .homeHeader .landingBrand h2 {
-  font-size: 32px;
+  font-size: 22px;
 }
 
 .homeBrandButton {
@@ -42,9 +42,9 @@ body {
 .homeHeaderIconButton {
   background: rgba(255, 255, 255, 0.9) !important;
   border: 1px solid rgba(15, 23, 42, 0.08) !important;
-  border-radius: 14px !important;
-  width: 46px;
-  height: 46px;
+  border-radius: 12px !important;
+  width: 38px;
+  height: 38px;
   color: #0f172a;
 }
 
@@ -245,14 +245,14 @@ body {
 .landingBrand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   user-select: none;
 }
 
 .landingBrandIcon {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #4b6cff 0%, #305fd8 100%);
   color: white;
   display: flex;
@@ -262,11 +262,11 @@ body {
 }
 
 .landingBrand h2 {
-  font-size: 42px;
+  font-size: 20px;
   margin: 0;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.3px;
   color: #0f172a;
 }
 
@@ -280,18 +280,18 @@ body {
   background: transparent;
   border: none;
   color: #475569;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 11px 14px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 
 .landingPrimaryButton,
 .landingSecondaryButton {
-  border-radius: 15px;
+  border-radius: 12px;
   border: 1px solid transparent;
-  font-weight: 700;
-  font-size: 20px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -302,10 +302,10 @@ body {
 }
 
 .landingHeaderButton {
-  min-height: 48px;
-  min-width: 170px;
-  padding: 10px 24px;
-  font-size: 16px;
+  min-height: 38px;
+  min-width: 120px;
+  padding: 8px 18px;
+  font-size: 13px;
   color: white;
   background: linear-gradient(135deg, #3569e6 0%, #2d5fd8 100%);
   box-shadow: 0 8px 20px rgba(53, 105, 230, 0.32);
@@ -329,13 +329,13 @@ body {
 .landingHeroBadge {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   border-radius: 999px;
   border: 1px solid #d6dde9;
   background: #ecf0f6;
-  padding: 10px 22px;
+  padding: 7px 16px;
   color: #475569;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -349,10 +349,10 @@ body {
 .landingHeroTitle {
   margin: 44px 0 0;
   color: #0b1633;
-  font-size: clamp(56px, 6.2vw, 112px);
-  line-height: 1.02;
+  font-size: clamp(40px, 4.5vw, 76px);
+  line-height: 1.05;
   font-weight: 800;
-  letter-spacing: -1.5px;
+  letter-spacing: -1.2px;
 }
 
 .landingHeroTitle span {
@@ -361,10 +361,10 @@ body {
 }
 
 .landingHeroDescription {
-  margin: 34px 0 0;
-  font-size: clamp(20px, 2vw, 36px);
+  margin: 18px 0 0;
+  font-size: clamp(16px, 1.5vw, 24px);
   color: #475569;
-  line-height: 1.35;
+  line-height: 1.4;
   font-weight: 500;
 }
 
@@ -393,7 +393,7 @@ body {
 }
 
 .landingFeatureSection {
-  margin-top: 94px;
+  margin-top: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -401,16 +401,16 @@ body {
 
 .landingFeatureActions {
   display: flex;
-  gap: 12px;
-  margin-bottom: 96px;
+  gap: 10px;
+  margin-bottom: 64px;
 }
 
 .landingFeatureActionButton {
-  min-height: 52px;
-  min-width: 170px;
-  padding: 10px 22px;
-  border-radius: 20px;
-  font-size: 16px;
+  min-height: 40px;
+  min-width: 140px;
+  padding: 8px 18px;
+  border-radius: 14px;
+  font-size: 13px;
 }
 
 .landingFeatureActions .landingPrimaryButton {
@@ -430,19 +430,19 @@ body {
 }
 
 .landingFeatureGrid {
-  width: min(100%, 980px);
+  width: min(100%, 820px);
   display: grid;
-  grid-template-columns: repeat(3, minmax(250px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(3, minmax(200px, 1fr));
+  gap: 18px;
 }
 
 .landingFeatureCard {
-  min-height: 168px;
-  border-radius: 18px;
+  min-height: 130px;
+  border-radius: 14px;
   border: 1px solid #d7deea;
   background: #f3f5f9;
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-  padding: 24px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -451,29 +451,33 @@ body {
 }
 
 .landingFeatureIconWrap {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
   background: #e5ecf8;
   color: #2f63e2;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
+}
+
+.landingFeatureIconWrap .MuiSvgIcon-root {
+  font-size: 18px;
 }
 
 .landingFeatureCard h3 {
-  margin: 0 0 8px;
+  margin: 0 0 5px;
   color: #0f172a;
-  font-size: 32px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .landingFeatureCard p {
   margin: 0;
   color: #475569;
-  line-height: 1.45;
-  font-size: 18px;
+  line-height: 1.4;
+  font-size: 13px;
 }
 
 /* Auth page styles */
@@ -506,14 +510,14 @@ body {
 }
 
 .authHeader .landingBrandIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
 }
 
 .authHeader .landingBrand h2 {
-  font-size: 30px;
-  letter-spacing: -0.4px;
+  font-size: 20px;
+  letter-spacing: -0.3px;
 }
 
 .authMain {
@@ -548,12 +552,13 @@ body {
 
 .authTabButton {
   border: 0;
-  border-radius: 12px;
-  min-height: 38px;
+  border-radius: 10px;
+  min-height: 28px;
   background: transparent;
   color: #475569;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
   cursor: pointer;
 }
 
@@ -627,17 +632,17 @@ body {
 }
 
 .authSubmitButton {
-  margin-top: 8px !important;
+  margin-top: 6px !important;
   margin-left: auto !important;
   margin-right: auto !important;
-  min-height: 46px !important;
-  border-radius: 11px !important;
+  min-height: 32px !important;
+  border-radius: 8px !important;
   text-transform: none !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
   background: linear-gradient(135deg, #4c7efc 0%, #1d5af5 100%) !important;
-  box-shadow: 0 10px 18px rgba(52, 97, 255, 0.28) !important;
-  width: 220px;
+  box-shadow: 0 6px 12px rgba(52, 97, 255, 0.18) !important;
+  width: 120px;
   justify-content: center;
 }
 
@@ -688,7 +693,7 @@ body {
   }
 
   .landingBrand h2 {
-    font-size: 28px;
+    font-size: 18px;
   }
 
   .landingNavActions {
@@ -698,11 +703,11 @@ body {
   .landingHeroBadge,
   .landingHeroDescription,
   .landingFeatureCard p {
-    font-size: 18px;
+    font-size: 12px;
   }
 
   .landingFeatureCard h3 {
-    font-size: 24px;
+    font-size: 16px;
   }
 
   .authCard {
@@ -711,7 +716,7 @@ body {
   }
 
   .authHeader .landingBrand h2 {
-    font-size: 26px;
+    font-size: 18px;
   }
 
   .authTitle {
