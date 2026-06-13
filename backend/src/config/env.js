@@ -12,9 +12,9 @@ const env = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
   accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY || '',
   refreshTokenExpiry: process.env.REFRESH_TOKEN_EXPIRY || '',
-  jwtIssuer: process.env.JWT_ISSUER || 'webmeet-ai',
-  jwtAudience: process.env.JWT_AUDIENCE || 'webmeet-ai-client',
-  corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  jwtIssuer: process.env.JWT_ISSUER || '',
+  jwtAudience: process.env.JWT_AUDIENCE || '',
+  corsOrigin: process.env.CORS_ORIGIN || '',
 };
 
 export const validateEnv = () => {
@@ -22,6 +22,10 @@ export const validateEnv = () => {
 
   if (!env.mongoUri) {
     missingVars.push('MONGODB_URI');
+  }
+
+  if (!env.geminiApiKey) {
+    missingVars.push('GEMINI_API_KEY');
   }
 
   if (!env.jwtAccessSecret) {
