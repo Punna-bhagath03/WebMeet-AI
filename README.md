@@ -53,6 +53,8 @@ A modern, secure video conferencing application with built-in AI assistance, rea
 
 ---
 
+## System Architecture & Engineering Highlights
+
 ## Tech Stack
 
 ### Backend
